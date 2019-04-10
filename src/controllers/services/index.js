@@ -19,13 +19,39 @@ class LocationOps {
     }
   }
 
+  async fetch(limit, offset, locationId = null) {
+    const criteria = locationId ? { where: { locationId } } : {};
+    try {
+      const response = await this.model[this.table].findAndCountAll({
+        limit,
+        offset,
+        // eslint-disable-next-line comma-dangle
+        ...criteria
+      });
+      const data = response.rows;
+      const meta = {};
+      const total = response.count;
+      const computePage = Math.floor(total / limit);
+      const pages = computePage === 0 ? 1 : computePage;
+      meta.total = total;
+      meta.limit = limit;
+      meta.offset = offset;
+      meta.pages = pages;
+      return { data, meta };
+    } catch (error) {
+      return Boom.badRequest(error.message);
+    }
+  }
+
   async update(data, criteria) {
     try {
       const [response] = await this.model[this.table].update(data, criteria);
       if (response) {
         return { message: 'record updated' };
       }
-      throw new Error('either the location id is invalid or you are not authorized to modify this location');
+      throw new Error(
+        'either the location id is invalid or you are not authorized to modify this location',
+      );
     } catch (error) {
       return Boom.badRequest(error.message);
     }

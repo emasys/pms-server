@@ -1,7 +1,12 @@
 import model from '../../sequelize/models';
 import { createUser, login } from './auth';
 import {
-  createLocation, createSubLocation, modifyLocation, modifySubLocation,
+  createLocation,
+  createSubLocation,
+  modifyLocation,
+  modifySubLocation,
+  fetchMainLocation,
+  fetchSubLocation,
 } from './location';
 
 const controllerPlugin = {
@@ -32,6 +37,8 @@ const controllerPlugin = {
     server.route(createSubLocation);
     server.route(modifyLocation);
     server.route(modifySubLocation);
+    server.route(fetchMainLocation);
+    server.route(fetchSubLocation);
   },
 };
 
