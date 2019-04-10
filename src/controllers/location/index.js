@@ -101,16 +101,64 @@ const modifyLocation = {
       },
     } = request;
     const location = new LocationOps(this.model, 'Locations', h);
-    const { data, criteria } = location.prepareForDb(
-      role,
-      title,
-      male,
-      female,
-      locationId,
-      userId,
-    );
+    const { data, criteria } = location.prepareForDb(role, title, male, female, locationId, userId);
 
     return location.update(data, criteria);
+  },
+};
+
+const fetchMainLocation = {
+  path: '/v1/location',
+  method: 'GET',
+  options: {
+    description: 'Fetch Location',
+    notes: 'Fetch main location',
+    tags: ['api'],
+    auth: {
+      scope: ['user', 'admin'],
+    },
+    validate: {
+      query: Joi.object().keys({
+        limit: Joi.number().default(20),
+        offset: Joi.number().default(0),
+      }),
+    },
+  },
+  async handler(request, h) {
+    const {
+      query: { limit, offset },
+    } = request;
+    const location = new LocationOps(this.model, 'Locations', h);
+    return location.fetch(limit, offset);
+  },
+};
+const fetchSubLocation = {
+  path: '/v1/location/{locationId}',
+  method: 'GET',
+  options: {
+    description: 'Fetch Sub Location',
+    notes: 'Fetch nested location',
+    tags: ['api'],
+    auth: {
+      scope: ['user', 'admin'],
+    },
+    validate: {
+      query: Joi.object().keys({
+        limit: Joi.number().default(20),
+        offset: Joi.number().default(0),
+      }),
+      params: Joi.object().keys({
+        locationId: Joi.number().required(),
+      }),
+    },
+  },
+  async handler(request, h) {
+    const {
+      query: { limit, offset },
+      params: { locationId },
+    } = request;
+    const location = new LocationOps(this.model, 'SubLocations', h);
+    return location.fetch(limit, offset, locationId);
   },
 };
 
@@ -158,5 +206,10 @@ const modifySubLocation = {
 };
 
 export {
-  createLocation, createSubLocation, modifyLocation, modifySubLocation,
+  createLocation,
+  createSubLocation,
+  modifyLocation,
+  modifySubLocation,
+  fetchSubLocation,
+  fetchMainLocation,
 };

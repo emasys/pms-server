@@ -30,12 +30,12 @@ export default (sequelize, DataTypes) => {
   });
   SubLocations.associate = (models) => {
     SubLocations.belongsTo(models.Locations, {
-      foreignKey: 'id',
+      foreignKey: 'locationId',
     });
   };
   SubLocations.associate = (models) => {
     SubLocations.belongsTo(models.Users, {
-      foreignKey: 'id',
+      foreignKey: 'userId',
     });
   };
 

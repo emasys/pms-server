@@ -22,6 +22,11 @@ export default (sequelize, DataTypes) => {
   });
   Locations.associate = (models) => {
     Locations.belongsTo(models.Users, {
+      foreignKey: 'userId',
+    });
+  };
+  Locations.associate = (models) => {
+    Locations.hasMany(models.SubLocations, {
       foreignKey: 'id',
     });
   };
