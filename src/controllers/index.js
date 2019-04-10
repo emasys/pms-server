@@ -7,6 +7,8 @@ import {
   modifySubLocation,
   fetchMainLocation,
   fetchSubLocation,
+  deleteLocation,
+  deleteSubLocation,
 } from './location';
 
 const controllerPlugin = {
@@ -39,6 +41,8 @@ const controllerPlugin = {
     server.route(modifySubLocation);
     server.route(fetchMainLocation);
     server.route(fetchSubLocation);
+    server.route(deleteLocation);
+    server.route(deleteSubLocation);
   },
 };
 

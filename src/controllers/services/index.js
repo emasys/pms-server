@@ -26,9 +26,18 @@ class LocationOps {
         limit,
         offset,
         // eslint-disable-next-line comma-dangle
-        ...criteria
+        ...criteria,
       });
-      const data = response.rows;
+      const residents = response.rows.map((row) => {
+        const male = parseInt(row.dataValues.male, 10) || 0;
+        const female = parseInt(row.dataValues.female, 10) || 0;
+        return {
+          ...row.dataValues,
+          totalResidents: male + female,
+        };
+      });
+
+      const data = residents;
       const meta = {};
       const total = response.count;
       const computePage = Math.floor(total / limit);
@@ -51,6 +60,20 @@ class LocationOps {
       }
       throw new Error(
         'either the location id is invalid or you are not authorized to modify this location',
+      );
+    } catch (error) {
+      return Boom.badRequest(error.message);
+    }
+  }
+
+  async delete(criteria) {
+    try {
+      const response = await this.model[this.table].destroy(criteria);
+      if (response) {
+        return { message: 'record deleted' };
+      }
+      throw new Error(
+        'either the location id is invalid or you are not authorized to delete this location',
       );
     } catch (error) {
       return Boom.badRequest(error.message);
