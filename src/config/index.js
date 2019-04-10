@@ -2,6 +2,7 @@ import Inert from 'inert';
 import Vision from 'vision';
 import Swagger from 'hapi-swagger';
 import Log from 'fancy-log';
+import Auth from '@now-ims/hapi-now-auth';
 import controller from '../controllers';
 
 const config = {
@@ -27,6 +28,7 @@ const config = {
     plugins: [
       { plugin: Inert.plugin },
       { plugin: Vision.plugin },
+      { plugin: Auth.plugin },
       {
         plugin: Swagger.plugin,
         options: {
