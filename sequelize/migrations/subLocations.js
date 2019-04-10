@@ -25,6 +25,12 @@ module.exports = {
       allowNull: false,
       unique: true,
     },
+    male: {
+      type: Sequelize.STRING,
+    },
+    female: {
+      type: Sequelize.STRING,
+    },
     createdAt: {
       allowNull: false,
       type: Sequelize.DATE,

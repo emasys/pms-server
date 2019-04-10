@@ -5,6 +5,12 @@ export default (sequelize, DataTypes) => {
       allowNull: false,
       unique: true,
     },
+    male: {
+      type: DataTypes.STRING,
+    },
+    female: {
+      type: DataTypes.STRING,
+    },
     userId: {
       type: DataTypes.INTEGER,
       allowNull: false,

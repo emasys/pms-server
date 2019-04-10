@@ -4,7 +4,6 @@ import { Op } from 'sequelize';
 
 import { signToken } from '../../../utils';
 
-
 const createUser = {
   path: '/v1/user',
   method: 'POST',
@@ -30,8 +29,9 @@ const createUser = {
     } = request;
     const role = username === 'emasys' ? 'admin' : 'user';
     try {
+      payload.role = role;
       const { name, id } = await this.model.Users.create(payload);
-      const token = signToken(username, id, role);
+      const token = signToken(id, role);
       return h.response({ message: `${name}'s account successfully created`, token }).code(201);
     } catch (error) {
       if (error.errors && error.errors[0].type === 'unique violation') {
@@ -51,9 +51,7 @@ const login = {
     auth: false,
     validate: {
       payload: Joi.object().keys({
-        email: Joi.string()
-          .email()
-          .required(),
+        email: Joi.string().email(),
         password: Joi.string(),
         username: Joi.string(),
       }),
@@ -77,7 +75,7 @@ const login = {
         return Boom.notFound('Invalid credentials');
       }
       const { id, role } = isUser;
-      const token = signToken(username, id, role);
+      const token = signToken(id, role);
       return h.response({ message: 'success', token }).code(200);
     } catch (error) {
       return Boom.badRequest(error.message);

@@ -1,5 +1,5 @@
 import Joi from 'joi';
-import LocationOps from './services';
+import LocationOps from '../services';
 
 const createLocation = {
   path: '/v1/location',
@@ -13,7 +13,11 @@ const createLocation = {
     },
     validate: {
       payload: Joi.object().keys({
-        title: Joi.string().required(),
+        title: Joi.string()
+          .trim()
+          .required(),
+        male: Joi.number(),
+        female: Joi.number(),
       }),
     },
   },
@@ -42,7 +46,11 @@ const createSubLocation = {
     },
     validate: {
       payload: Joi.object().keys({
-        title: Joi.string().required(),
+        title: Joi.string()
+          .trim()
+          .required(),
+        male: Joi.number(),
+        female: Joi.number(),
       }),
       params: Joi.object().keys({
         locationId: Joi.number().required(),
@@ -63,18 +71,19 @@ const createSubLocation = {
   },
 };
 
-const addResidents = {
-  path: '/v1/location/{locationId}/add-residents',
-  method: 'POST',
+const modifyLocation = {
+  path: '/v1/location/{locationId}',
+  method: 'PUT',
   options: {
-    description: 'Add residents',
-    notes: 'Add new residents',
+    description: 'Modify Location',
+    notes: 'Modify main location',
     tags: ['api'],
     auth: {
       scope: ['user', 'admin'],
     },
     validate: {
       payload: Joi.object().keys({
+        title: Joi.string().trim(),
         male: Joi.number(),
         female: Joi.number(),
       }),
@@ -85,30 +94,39 @@ const addResidents = {
   },
   async handler(request, h) {
     const {
-      payload,
+      payload: { title, male, female },
       params: { locationId },
       auth: {
-        credentials: { userId },
+        credentials: { userId, role },
       },
     } = request;
-    const location = new LocationOps(this.model, 'Residents', h);
-    const data = { ...payload, modifiedBy: userId, locationId };
-    return location.create(data);
+    const location = new LocationOps(this.model, 'Locations', h);
+    const { data, criteria } = location.prepareForDb(
+      role,
+      title,
+      male,
+      female,
+      locationId,
+      userId,
+    );
+
+    return location.update(data, criteria);
   },
 };
 
-const addSubResidents = {
-  path: '/v1/location/sub/{subLocationId}/add-residents',
-  method: 'POST',
+const modifySubLocation = {
+  path: '/v1/sub-location/{subLocationId}',
+  method: 'PUT',
   options: {
-    description: 'Add residents',
-    notes: 'Add new residents',
+    description: 'Modify sub Location',
+    notes: 'Modify nested location',
     tags: ['api'],
     auth: {
       scope: ['user', 'admin'],
     },
     validate: {
       payload: Joi.object().keys({
+        title: Joi.string().trim(),
         male: Joi.number(),
         female: Joi.number(),
       }),
@@ -119,18 +137,26 @@ const addSubResidents = {
   },
   async handler(request, h) {
     const {
-      payload,
+      payload: { title, male, female },
       params: { subLocationId },
       auth: {
-        credentials: { userId },
+        credentials: { userId, role },
       },
     } = request;
-    const location = new LocationOps(this.model, 'Residents', h);
-    const data = { ...payload, modifiedBy: userId, subLocationId };
-    return location.create(data);
+
+    const location = new LocationOps(this.model, 'SubLocations', h);
+    const { data, criteria } = location.prepareForDb(
+      role,
+      title,
+      male,
+      female,
+      subLocationId,
+      userId,
+    );
+    return location.update(data, criteria);
   },
 };
 
 export {
-  createLocation, createSubLocation, addResidents, addSubResidents,
+  createLocation, createSubLocation, modifyLocation, modifySubLocation,
 };

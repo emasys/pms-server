@@ -13,6 +13,11 @@ export default (sequelize, DataTypes) => {
         },
       },
     },
+    role: {
+      type: DataTypes.ENUM,
+      values: ['admin', 'user'],
+      defaultValue: 'user',
+    },
     name: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -47,11 +52,17 @@ export default (sequelize, DataTypes) => {
       },
     },
   });
-  // Users.associate = (models) => {
-  //   Users.hasMany(models.PhoneNumbers, {
-  //     foreignKey: 'id',
-  //   });
-  // };
+  Users.associate = (models) => {
+    Users.hasMany(models.Locations, {
+      foreignKey: 'id',
+    });
+  };
+
+  Users.associate = (models) => {
+    Users.hasMany(models.SubLocations, {
+      foreignKey: 'id',
+    });
+  };
 
   Users.beforeCreate(async (pendingUser) => {
     // eslint-disable-next-line no-param-reassign

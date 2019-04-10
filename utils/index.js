@@ -1,11 +1,11 @@
 import jwt from 'jsonwebtoken';
-/* eslint-disable import/prefer-default-export */
 
-export const signToken = (username, id) => {
+// eslint-disable-next-line import/prefer-default-export
+export const signToken = (id, role) => {
   const token = jwt.sign(
     {
-      username,
       userId: id,
+      role,
     },
     process.env.SECRET,
     {
