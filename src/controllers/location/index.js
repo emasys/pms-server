@@ -107,6 +107,112 @@ const modifyLocation = {
   },
 };
 
+const modifySubLocation = {
+  path: '/v1/sub-location/{subLocationId}',
+  method: 'PUT',
+  options: {
+    description: 'Modify sub Location',
+    notes: 'Modify nested location',
+    tags: ['api'],
+    auth: {
+      scope: ['user', 'admin'],
+    },
+    validate: {
+      payload: Joi.object().keys({
+        title: Joi.string().trim(),
+        male: Joi.number(),
+        female: Joi.number(),
+      }),
+      params: Joi.object().keys({
+        subLocationId: Joi.number().required(),
+      }),
+    },
+  },
+  async handler(request, h) {
+    const {
+      payload: { title, male, female },
+      params: { subLocationId },
+      auth: {
+        credentials: { userId, role },
+      },
+    } = request;
+
+    const location = new LocationOps(this.model, 'SubLocations', h);
+    const { data, criteria } = location.prepareForDb(
+      role,
+      title,
+      male,
+      female,
+      subLocationId,
+      userId,
+    );
+    return location.update(data, criteria);
+  },
+};
+
+const deleteLocation = {
+  path: '/v1/location/{locationId}',
+  method: 'DELETE',
+  options: {
+    description: 'Delete Location',
+    notes: 'Delete main location',
+    tags: ['api'],
+    auth: {
+      scope: ['user', 'admin'],
+    },
+    validate: {
+      params: Joi.object().keys({
+        locationId: Joi.number().required(),
+      }),
+    },
+  },
+  async handler(request, h) {
+    const {
+      params: { locationId },
+      auth: {
+        credentials: { userId, role },
+      },
+    } = request;
+    const isAdmin = role === 'admin';
+    const location = new LocationOps(this.model, 'Locations', h);
+    const criteria = isAdmin
+      ? { where: { id: locationId } }
+      : { where: { id: locationId, userId } };
+    return location.delete(criteria);
+  },
+};
+
+const deleteSubLocation = {
+  path: '/v1/sub-location/{locationId}',
+  method: 'DELETE',
+  options: {
+    description: 'Delete sub Location',
+    notes: 'Delete nested location',
+    tags: ['api'],
+    auth: {
+      scope: ['user', 'admin'],
+    },
+    validate: {
+      params: Joi.object().keys({
+        locationId: Joi.number().required(),
+      }),
+    },
+  },
+  async handler(request, h) {
+    const {
+      params: { locationId },
+      auth: {
+        credentials: { userId, role },
+      },
+    } = request;
+    const isAdmin = role === 'admin';
+    const location = new LocationOps(this.model, 'SubLocations', h);
+    const criteria = isAdmin
+      ? { where: { id: locationId } }
+      : { where: { id: locationId, userId } };
+    return location.delete(criteria);
+  },
+};
 const fetchMainLocation = {
   path: '/v1/location',
   method: 'GET',
@@ -162,50 +268,9 @@ const fetchSubLocation = {
   },
 };
 
-const modifySubLocation = {
-  path: '/v1/sub-location/{subLocationId}',
-  method: 'PUT',
-  options: {
-    description: 'Modify sub Location',
-    notes: 'Modify nested location',
-    tags: ['api'],
-    auth: {
-      scope: ['user', 'admin'],
-    },
-    validate: {
-      payload: Joi.object().keys({
-        title: Joi.string().trim(),
-        male: Joi.number(),
-        female: Joi.number(),
-      }),
-      params: Joi.object().keys({
-        subLocationId: Joi.number().required(),
-      }),
-    },
-  },
-  async handler(request, h) {
-    const {
-      payload: { title, male, female },
-      params: { subLocationId },
-      auth: {
-        credentials: { userId, role },
-      },
-    } = request;
-
-    const location = new LocationOps(this.model, 'SubLocations', h);
-    const { data, criteria } = location.prepareForDb(
-      role,
-      title,
-      male,
-      female,
-      subLocationId,
-      userId,
-    );
-    return location.update(data, criteria);
-  },
-};
-
 export {
+  deleteSubLocation,
+  deleteLocation,
   createLocation,
   createSubLocation,
   modifyLocation,
