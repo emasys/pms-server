@@ -6,12 +6,15 @@ const options = {
   relativeTo: __dirname,
 };
 
+const testResource = {};
+
 (async () => {
   try {
     const server = await Glue.compose(
       config,
       options,
     );
+    testResource.server = server;
     await server.start();
     Log(`Server running at: ${server.info.uri}`);
   } catch (error) {
@@ -19,3 +22,5 @@ const options = {
     process.exit(1);
   }
 })();
+
+export default testResource;
