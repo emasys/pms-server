@@ -7,13 +7,13 @@
     "start": "nodemon --exec babel-node ./src/index.js",
     "build": "babel src --out-dir ./dist --source-maps",
     "serve": "node ./dist/index.js",
-    "test": "NODE_ENV=test nyc mocha ./test/*.spec.js --require @babel/register ",
+    "test": "NODE_ENV=test nyc mocha ./test/*.spec.js --require @babel/register",
     "test:watch": "NODE_ENV=test mocha --timeout=50000 ./test/*.spec.js --require @babel/register --watch",
     "debug": "node --inspect-brk ./dist/index.js"
   },
   "keywords": [],
   "author": "emasys",
-  "license": "ISC",
+  "license": "MIT",
   "devDependencies": {
     "@babel/cli": "^7.1.2",
     "@babel/core": "^7.1.2",
