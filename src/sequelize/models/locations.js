@@ -23,6 +23,7 @@ export default (sequelize, DataTypes) => {
   Locations.associate = (models) => {
     Locations.belongsTo(models.Users, {
       foreignKey: 'userId',
+      onDelete: 'SET NULL',
     });
   };
   Locations.associate = (models) => {
