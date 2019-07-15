@@ -1,206 +1,217 @@
 /* eslint-disable no-undef */
 import '@babel/polyfill';
-import request from 'supertest';
 import { expect } from 'chai';
 import app from '../src';
-import models from '../sequelize/models';
+import models from '../src/sequelize/models';
 
-// eslint-disable-next-line import/prefer-default-export
 let userToken;
+let adminToken;
 
 describe('test suite for location operations', () => {
-  describe('POST /user', () => {
-    before((done) => {
-      models.sequelize
-        .sync({ force: true })
-        .then(() => {
-          done(null);
-        })
-        .catch((errors) => {
-          done(errors);
-        });
-    });
-    it('should generate a user token', (done) => {
-      request(app.server.listener)
-        .post('/v1/user')
-        .send({
+  before((done) => {
+    models.sequelize
+      .sync({ force: true })
+      .then(() => {
+        done(null);
+      })
+      .catch((errors) => {
+        done(errors);
+      });
+  });
+  after(() => {
+    app.server.stop();
+  });
+  describe('Add user', () => {
+    it('should generate an admin token', async () => {
+      const { result, statusCode } = await app.server.inject({
+        method: 'POST',
+        url: '/v1/auth/signup',
+        payload: {
           email: 'sample@example.com',
           password: 'password',
           username: 'emasys',
           name: 'john doe',
-        })
-        .expect('Content-Type', /json/)
-        .expect(201)
-        .end((err, res) => {
-          if (!err) {
-            userToken = res.body.token;
-          }
-          done();
+        },
+      });
+      adminToken = result.token;
+      expect(statusCode).to.equal(201);
+    });
+    it('should generate a user token', async () => {
+      const { result, statusCode } = await app.server.inject({
+        method: 'POST',
+        url: '/v1/auth/signup',
+        payload: {
+          email: 'sample@example2.com',
+          password: 'password',
+          username: 'john',
+          name: 'john doe',
+        },
+      });
+      userToken = result.token;
+      expect(statusCode).to.equal(201);
+    });
+  });
+
+  describe('Create locations', () => {
+    it('should create a new location', async () => {
+      const { result, statusCode } = await app.server.inject({
+        method: 'POST',
+        url: '/v1/location',
+        payload: {
+          title: 'lagos',
+          male: 24,
+          female: 24,
+        },
+        headers: { Authorization: `Bearer ${userToken}` },
+      });
+      expect(statusCode).to.equal(201);
+      expect(result.message.dataValues).to.include({
+        title: 'lagos',
+        userId: 2,
+      });
+    });
+    it('should fail to create duplicate locations', async () => {
+      const { result, statusCode } = await app.server.inject({
+        method: 'POST',
+        url: '/v1/location',
+        payload: {
+          title: 'lagos',
+          male: 240000,
+          female: 240000,
+        },
+        headers: { Authorization: `Bearer ${userToken}` },
+      });
+      expect(statusCode).to.equal(409);
+      expect(result).to.eql({
+        message: 'Location already exists',
+      });
+    });
+    it('should create a new nested location', async () => {
+      const { result, statusCode } = await app.server.inject({
+        method: 'POST',
+        url: '/v1/location/1',
+        payload: {
+          title: 'ikeja',
+          male: 10,
+          female: 13,
+        },
+        headers: { Authorization: `Bearer ${userToken}` },
+      });
+      expect(statusCode).to.equal(201);
+      expect(result.message.dataValues).to.include({
+        title: 'ikeja',
+        locationId: 1,
+        userId: 2,
+      });
+    });
+  });
+
+  describe('Modify locations', () => {
+    it('should modify a location', async () => {
+      const { result, statusCode } = await app.server.inject({
+        method: 'PUT',
+        url: '/v1/location/1',
+        payload: {
+          title: 'lagos state',
+          male: 24000,
+        },
+        headers: { Authorization: `Bearer ${userToken}` },
+      });
+      expect(statusCode).to.equal(200);
+      expect(result).to.eql({
+        message: 'record updated',
+      });
+    });
+    it('should modify a non-existent location', async () => {
+      const { result, statusCode } = await app.server.inject({
+        method: 'PUT',
+        url: '/v1/location/10',
+        payload: {
+          title: 'random state',
+          male: 24000,
+          female: 240000,
+        },
+        headers: { Authorization: `Bearer ${userToken}` },
+      });
+      expect(statusCode).to.equal(404);
+      expect(result).to.eql({
+        message: 'location not found',
+      });
+    });
+    it('should modify a nested location', async () => {
+      const { result, statusCode } = await app.server.inject({
+        method: 'PUT',
+        url: '/v1/sub-location/1',
+        payload: {
+          title: 'ikeja lga',
+          male: 500,
+          female: 500,
+        },
+        headers: { Authorization: `Bearer ${userToken}` },
+      });
+      expect(statusCode).to.equal(200);
+      expect(result).to.eql({
+        message: 'record updated',
+      });
+    });
+  });
+
+  describe('Fetch locations', () => {
+    it('should fetch main locations', async () => {
+      const { result, statusCode } = await app.server.inject({
+        method: 'GET',
+        url: '/v1/location',
+        headers: { Authorization: `Bearer ${userToken}` },
+      });
+      expect(statusCode).to.equal(200);
+      expect(result.data).to.have.length(1);
+      expect(result)
+        .to.have.property('meta')
+        .to.eql({
+          total: 1,
+          limit: 20,
+          offset: 0,
+          pages: 1,
+        });
+    });
+
+    it('should fetch nested locations', async () => {
+      const { result, statusCode } = await app.server.inject({
+        method: 'GET',
+        url: '/v1/location/1',
+        headers: { Authorization: `Bearer ${adminToken}` },
+      });
+      expect(statusCode).to.equal(200);
+      expect(result.data).to.have.length(1);
+      expect(result)
+        .to.have.property('meta')
+        .to.eql({
+          total: 1,
+          limit: 20,
+          offset: 0,
+          pages: 1,
         });
     });
   });
 
-  describe('POST /location', () => {
-    it('should create a new location', (done) => {
-      request(app.server.listener)
-        .post('/v1/location')
-        .send({
-          title: 'lagos',
-          male: 24,
-          female: 24,
-        })
-        .set('Authorization', `bearer ${userToken}`)
-        .expect('Content-Type', /json/)
-        .expect(201)
-        .end((err, res) => {
-          if (!err) {
-            expect(res.body.message).to.include({
-              id: 1,
-              title: 'lagos',
-              male: '24',
-              female: '24',
-              userId: 1,
-            });
-          }
-          done();
-        });
+  describe('Delete location', () => {
+    it('should delete a nested location', async () => {
+      const { result, statusCode } = await app.server.inject({
+        method: 'DELETE',
+        url: '/v1/sub-location/1',
+        headers: { Authorization: `Bearer ${userToken}` },
+      });
+      expect(statusCode).to.equal(200);
+      expect(result).to.eql({ message: 'record deleted' });
     });
-    it('should create a new nested location', (done) => {
-      request(app.server.listener)
-        .post('/v1/location/1')
-        .send({
-          title: 'ikeja',
-          male: 24,
-          female: 24,
-        })
-        .set('Authorization', `bearer ${userToken}`)
-        .expect('Content-Type', /json/)
-        .expect(201)
-        .end((err, res) => {
-          if (!err) {
-            expect(res.body.message).to.include({
-              id: 1,
-              title: 'ikeja',
-              locationId: 1,
-              male: '24',
-              female: '24',
-              userId: 1,
-            });
-          }
-          done();
-        });
-    });
-    it('should modify a location', (done) => {
-      request(app.server.listener)
-        .put('/v1/location/1')
-        .send({
-          title: 'Kano',
-          male: 242,
-          female: 242,
-        })
-        .set('Authorization', `bearer ${userToken}`)
-        .expect('Content-Type', /json/)
-        .expect(201)
-        .end((err, res) => {
-          if (!err) {
-            expect(res.body.message).to.include({
-              id: 1,
-              title: 'kano',
-              male: '242',
-              female: '242',
-              userId: 1,
-            });
-          }
-          done();
-        });
-    });
-    it('should modify a nested location', (done) => {
-      request(app.server.listener)
-        .put('/v1/sub-location/1')
-        .send({
-          title: 'ikeja',
-          male: 500,
-          female: 500,
-        })
-        .set('Authorization', `bearer ${userToken}`)
-        .expect('Content-Type', /json/)
-        .expect(200)
-        .end((err, res) => {
-          if (!err) {
-            expect(res.body).to.include({
-              message: 'record updated',
-            });
-          }
-          done();
-        });
-    });
-    it('should fetch main locations', (done) => {
-      request(app.server.listener)
-        .get('/v1/location')
-        .set('Authorization', `bearer ${userToken}`)
-        .expect('Content-Type', /json/)
-        .expect(200)
-        .end((err, res) => {
-          if (!err) {
-            expect(res.body).to.have.property('data');
-            expect(res.body)
-              .to.have.property('meta')
-              .to.eql({
-                total: 1, limit: 20, offset: 0, pages: 1,
-              });
-            expect(res.body.data).to.have.length(1);
-          }
-          done();
-        });
-    });
-    it('should fetch nested locations', (done) => {
-      request(app.server.listener)
-        .get('/v1/location/1')
-        .set('Authorization', `bearer ${userToken}`)
-        .expect('Content-Type', /json/)
-        .expect(200)
-        .end((err, res) => {
-          if (!err) {
-            expect(res.body).to.have.property('data');
-            expect(res.body)
-              .to.have.property('meta')
-              .to.eql({
-                total: 1, limit: 20, offset: 0, pages: 1,
-              });
-            expect(res.body.data).to.have.length(1);
-          }
-          done();
-        });
-    });
-    it('should delete a location', (done) => {
-      request(app.server.listener)
-        .delete('/v1/location/1')
-        .set('Authorization', `bearer ${userToken}`)
-        .expect('Content-Type', /json/)
-        .expect(200)
-        .end((err, res) => {
-          if (!err) {
-            expect(res.body).to.include({
-              message: 'record deleted',
-            });
-          }
-          done();
-        });
-    });
-    it('should delete a nested location', (done) => {
-      request(app.server.listener)
-        .delete('/v1/sub-location/1')
-        .set('Authorization', `bearer ${userToken}`)
-        .expect('Content-Type', /json/)
-        .expect(200)
-        .end((err, res) => {
-          if (!err) {
-            expect(res.body).to.include({
-              message: 'record deleted',
-            });
-          }
-          done();
-        });
+    it('should delete a location', async () => {
+      const { result, statusCode } = await app.server.inject({
+        method: 'DELETE',
+        url: '/v1/location/1',
+        headers: { Authorization: `Bearer ${userToken}` },
+      });
+      expect(statusCode).to.equal(200);
+      expect(result).to.eql({ message: 'record deleted' });
     });
   });
 });

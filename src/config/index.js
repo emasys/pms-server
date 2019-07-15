@@ -1,7 +1,6 @@
 import Inert from 'inert';
 import Vision from 'vision';
 import Swagger from 'hapi-swagger';
-import Log from 'fancy-log';
 import Auth from '@now-ims/hapi-now-auth';
 import controller from '../controllers';
 
@@ -18,7 +17,6 @@ const config = {
           stripUnknown: true,
         },
         failAction: async (request, h, err) => {
-          Log.error(err);
           throw err;
         },
       },
@@ -36,6 +34,7 @@ const config = {
             title: 'Population Management System',
             version: process.env.VERSION,
           },
+          basePath: '/v1',
           securityDefinitions: {
             token: {
               type: 'apiKey',

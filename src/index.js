@@ -17,9 +17,11 @@ const testResource = {};
     testResource.server = server;
     await server.start();
     Log(`Server running at: ${server.info.uri}`);
-    Log(`docs running on ${server.info.uri}/documentation`);
+    Log(`docs running at ${server.info.uri}/documentation`);
   } catch (error) {
+    /* istanbul ignore next */
     Log.error(error);
+    /* istanbul ignore next */
     process.exit(1);
   }
 })();

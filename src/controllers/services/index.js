@@ -7,13 +7,17 @@ class LocationOps {
     this.h = h;
   }
 
+  handleResponse(message, code) {
+    return this.h.response({ message }).code(code);
+  }
+
   async create(data) {
     try {
       const response = await this.model[this.table].create(data);
-      return this.h.response({ message: response }).code(201);
+      return this.handleResponse(response, 201);
     } catch (error) {
       if (error.errors[0]) {
-        return Boom.conflict(error.errors[0].type);
+        return this.handleResponse('Location already exists', 409);
       }
       return Boom.badRequest(error.message);
     }
@@ -25,7 +29,6 @@ class LocationOps {
       const response = await this.model[this.table].findAndCountAll({
         limit,
         offset,
-        // eslint-disable-next-line comma-dangle
         ...criteria,
       });
       const residents = response.rows.map((row) => {
@@ -58,9 +61,7 @@ class LocationOps {
       if (response) {
         return { message: 'record updated' };
       }
-      throw new Error(
-        'either the location id is invalid or you are not authorized to modify this location',
-      );
+      return this.handleResponse('location not found', 404);
     } catch (error) {
       return Boom.badRequest(error.message);
     }
@@ -72,9 +73,7 @@ class LocationOps {
       if (response) {
         return { message: 'record deleted' };
       }
-      throw new Error(
-        'either the location id is invalid or you are not authorized to delete this location',
-      );
+      return this.handleResponse('location not found', 404);
     } catch (error) {
       return Boom.badRequest(error.message);
     }

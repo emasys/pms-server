@@ -31,6 +31,7 @@ export default (sequelize, DataTypes) => {
   SubLocations.associate = (models) => {
     SubLocations.belongsTo(models.Locations, {
       foreignKey: 'locationId',
+      onDelete: 'CASCADE',
     });
   };
   SubLocations.associate = (models) => {

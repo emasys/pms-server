@@ -1,97 +1,46 @@
-import Joi from 'joi';
 import LocationOps from '../services';
+import {
+  newLocationOption,
+  newSubLocationOption,
+  modifyLocationOption,
+  modifySubLocationOpt,
+  deleteLocationOption,
+  delSubLocationOpt,
+  fetchLocationOption,
+  fetchSubLocationOption,
+} from './options';
 
-const createLocation = {
-  path: '/v1/location',
+export const createLocation = {
+  path: '/location',
   method: 'POST',
-  options: {
-    description: 'Create Location',
-    notes: 'Create main location',
-    tags: ['api'],
-    auth: {
-      scope: ['user', 'admin'],
-    },
-    validate: {
-      payload: Joi.object().keys({
-        title: Joi.string()
-          .trim()
-          .required(),
-        male: Joi.number(),
-        female: Joi.number(),
-      }),
-    },
-  },
+  options: newLocationOption,
   async handler(request, h) {
     const location = new LocationOps(this.model, 'Locations', h);
-    const {
-      payload,
-      auth: {
-        credentials: { userId },
-      },
-    } = request;
+    const { payload } = request;
+    const { userId } = request.auth.credentials;
     const data = { ...payload, userId };
     return location.create(data);
   },
 };
 
-const createSubLocation = {
-  path: '/v1/location/{locationId}',
+export const createSubLocation = {
+  path: '/location/{locationId}',
   method: 'POST',
-  options: {
-    description: 'Create Sub Location',
-    notes: 'Create nested location',
-    tags: ['api'],
-    auth: {
-      scope: ['user', 'admin'],
-    },
-    validate: {
-      payload: Joi.object().keys({
-        title: Joi.string()
-          .trim()
-          .required(),
-        male: Joi.number(),
-        female: Joi.number(),
-      }),
-      params: Joi.object().keys({
-        locationId: Joi.number().required(),
-      }),
-    },
-  },
+  options: newSubLocationOption,
   async handler(request, h) {
-    const {
-      payload,
-      params: { locationId },
-      auth: {
-        credentials: { userId },
-      },
-    } = request;
+    const { payload } = request;
+    const { locationId } = request.params;
+    const { userId } = request.auth.credentials;
     const location = new LocationOps(this.model, 'SubLocations', h);
     const data = { ...payload, userId, locationId };
     return location.create(data);
   },
 };
 
-const modifyLocation = {
-  path: '/v1/location/{locationId}',
+export const modifyLocation = {
+  path: '/location/{locationId}',
   method: 'PUT',
-  options: {
-    description: 'Modify Location',
-    notes: 'Modify main location',
-    tags: ['api'],
-    auth: {
-      scope: ['user', 'admin'],
-    },
-    validate: {
-      payload: Joi.object().keys({
-        title: Joi.string().trim(),
-        male: Joi.number(),
-        female: Joi.number(),
-      }),
-      params: Joi.object().keys({
-        locationId: Joi.number().required(),
-      }),
-    },
-  },
+  options: modifyLocationOption,
   async handler(request, h) {
     const {
       payload: { title, male, female },
@@ -101,33 +50,23 @@ const modifyLocation = {
       },
     } = request;
     const location = new LocationOps(this.model, 'Locations', h);
-    const { data, criteria } = location.prepareForDb(role, title, male, female, locationId, userId);
+    const { data, criteria } = location.prepareForDb(
+      role,
+      title,
+      male,
+      female,
+      locationId,
+      userId,
+    );
 
     return location.update(data, criteria);
   },
 };
 
-const modifySubLocation = {
-  path: '/v1/sub-location/{subLocationId}',
+export const modifySubLocation = {
+  path: '/sub-location/{subLocationId}',
   method: 'PUT',
-  options: {
-    description: 'Modify sub Location',
-    notes: 'Modify nested location',
-    tags: ['api'],
-    auth: {
-      scope: ['user', 'admin'],
-    },
-    validate: {
-      payload: Joi.object().keys({
-        title: Joi.string().trim(),
-        male: Joi.number(),
-        female: Joi.number(),
-      }),
-      params: Joi.object().keys({
-        subLocationId: Joi.number().required(),
-      }),
-    },
-  },
+  options: modifySubLocationOpt,
   async handler(request, h) {
     const {
       payload: { title, male, female },
@@ -150,29 +89,13 @@ const modifySubLocation = {
   },
 };
 
-const deleteLocation = {
-  path: '/v1/location/{locationId}',
+export const deleteLocation = {
+  path: '/location/{locationId}',
   method: 'DELETE',
-  options: {
-    description: 'Delete Location',
-    notes: 'Delete main location',
-    tags: ['api'],
-    auth: {
-      scope: ['user', 'admin'],
-    },
-    validate: {
-      params: Joi.object().keys({
-        locationId: Joi.number().required(),
-      }),
-    },
-  },
+  options: deleteLocationOption,
   async handler(request, h) {
-    const {
-      params: { locationId },
-      auth: {
-        credentials: { userId, role },
-      },
-    } = request;
+    const { locationId } = request.params;
+    const { userId, role } = request.auth.credentials;
     const isAdmin = role === 'admin';
     const location = new LocationOps(this.model, 'Locations', h);
     const criteria = isAdmin
@@ -182,22 +105,10 @@ const deleteLocation = {
   },
 };
 
-const deleteSubLocation = {
-  path: '/v1/sub-location/{locationId}',
+export const deleteSubLocation = {
+  path: '/sub-location/{locationId}',
   method: 'DELETE',
-  options: {
-    description: 'Delete sub Location',
-    notes: 'Delete nested location',
-    tags: ['api'],
-    auth: {
-      scope: ['user', 'admin'],
-    },
-    validate: {
-      params: Joi.object().keys({
-        locationId: Joi.number().required(),
-      }),
-    },
-  },
+  options: delSubLocationOpt,
   async handler(request, h) {
     const {
       params: { locationId },
@@ -213,23 +124,10 @@ const deleteSubLocation = {
     return location.delete(criteria);
   },
 };
-const fetchMainLocation = {
-  path: '/v1/location',
+export const fetchMainLocation = {
+  path: '/location',
   method: 'GET',
-  options: {
-    description: 'Fetch Location',
-    notes: 'Fetch main location',
-    tags: ['api'],
-    auth: {
-      scope: ['user', 'admin'],
-    },
-    validate: {
-      query: Joi.object().keys({
-        limit: Joi.number().default(20),
-        offset: Joi.number().default(0),
-      }),
-    },
-  },
+  options: fetchLocationOption,
   async handler(request, h) {
     const {
       query: { limit, offset },
@@ -238,26 +136,11 @@ const fetchMainLocation = {
     return location.fetch(limit, offset);
   },
 };
-const fetchSubLocation = {
-  path: '/v1/location/{locationId}',
+
+export const fetchSubLocation = {
+  path: '/location/{locationId}',
   method: 'GET',
-  options: {
-    description: 'Fetch Sub Location',
-    notes: 'Fetch nested location',
-    tags: ['api'],
-    auth: {
-      scope: ['user', 'admin'],
-    },
-    validate: {
-      query: Joi.object().keys({
-        limit: Joi.number().default(20),
-        offset: Joi.number().default(0),
-      }),
-      params: Joi.object().keys({
-        locationId: Joi.number().required(),
-      }),
-    },
-  },
+  options: fetchSubLocationOption,
   async handler(request, h) {
     const {
       query: { limit, offset },
@@ -266,15 +149,4 @@ const fetchSubLocation = {
     const location = new LocationOps(this.model, 'SubLocations', h);
     return location.fetch(limit, offset, locationId);
   },
-};
-
-export {
-  deleteSubLocation,
-  deleteLocation,
-  createLocation,
-  createSubLocation,
-  modifyLocation,
-  modifySubLocation,
-  fetchSubLocation,
-  fetchMainLocation,
 };
