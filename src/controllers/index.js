@@ -1,4 +1,4 @@
-import model from '../../sequelize/models';
+import model from '../sequelize/models';
 import { createUser, login } from './auth';
 import {
   createLocation,
@@ -31,8 +31,9 @@ const controllerPlugin = {
         };
       },
     });
-
     server.auth.default('jwt-strategy');
+    // eslint-disable-next-line no-param-reassign
+    server.realm.modifiers.route.prefix = '/v1';
     server.route(createUser);
     server.route(login);
     server.route(createLocation);
