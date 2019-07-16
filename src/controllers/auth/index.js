@@ -1,4 +1,3 @@
-import Boom from 'boom';
 import { signUpOptions, signInOptions } from './options';
 import Auth from './services';
 
@@ -19,14 +18,10 @@ const login = {
   path: '/auth/signin',
   method: 'POST',
   options: signInOptions,
-  async handler(request, h) {
+  handler(request, h) {
     const { payload } = request;
-    try {
-      const auth = new Auth(this.model, h);
-      return auth.login(payload);
-    } catch (error) {
-      return Boom.badRequest(error.message);
-    }
+    const auth = new Auth(this.model, h);
+    return auth.login(payload);
   },
 };
 

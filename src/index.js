@@ -1,4 +1,4 @@
-import Glue from 'glue';
+import Glue from '@hapi/glue';
 import Log from 'fancy-log';
 import config from './config';
 
