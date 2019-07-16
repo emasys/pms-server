@@ -54,13 +54,25 @@ describe('test suite for user operations', () => {
   });
 
   describe('User sign in', () => {
-    it('should successfully sign in a registered user', async () => {
+    it('should successfully sign in a registered user with username', async () => {
       const { result, statusCode } = await app.server.inject({
         method: 'POST',
         url: '/v1/auth/signin',
         payload: {
           password: 'password',
           username: 'johnny',
+        },
+      });
+      expect(statusCode).to.equal(200);
+      expect(result).to.include({ message: 'success' });
+    });
+    it('should successfully sign in a registered user with email', async () => {
+      const { result, statusCode } = await app.server.inject({
+        method: 'POST',
+        url: '/v1/auth/signin',
+        payload: {
+          password: 'password',
+          email: 'sample@example.com',
         },
       });
       expect(statusCode).to.equal(200);
