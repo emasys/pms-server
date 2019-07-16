@@ -1,4 +1,4 @@
-import LocationOps from '../services';
+import LocationOps from './services';
 import {
   newLocationOption,
   newSubLocationOption,
@@ -9,12 +9,13 @@ import {
   fetchLocationOption,
   fetchSubLocationOption,
 } from './options';
+import { modifyHandler, deleteHandler } from './util';
 
 export const createLocation = {
   path: '/location',
   method: 'POST',
   options: newLocationOption,
-  async handler(request, h) {
+  handler(request, h) {
     const location = new LocationOps(this.model, 'Locations', h);
     const { payload } = request;
     const { userId } = request.auth.credentials;
@@ -27,7 +28,7 @@ export const createSubLocation = {
   path: '/location/{locationId}',
   method: 'POST',
   options: newSubLocationOption,
-  async handler(request, h) {
+  handler(request, h) {
     const { payload } = request;
     const { locationId } = request.params;
     const { userId } = request.auth.credentials;
@@ -41,51 +42,17 @@ export const modifyLocation = {
   path: '/location/{locationId}',
   method: 'PUT',
   options: modifyLocationOption,
-  async handler(request, h) {
-    const {
-      payload: { title, male, female },
-      params: { locationId },
-      auth: {
-        credentials: { userId, role },
-      },
-    } = request;
-    const location = new LocationOps(this.model, 'Locations', h);
-    const { data, criteria } = location.prepareForDb(
-      role,
-      title,
-      male,
-      female,
-      locationId,
-      userId,
-    );
-
-    return location.update(data, criteria);
+  handler(request, h) {
+    return modifyHandler(this.model, h, request, 'Locations');
   },
 };
 
 export const modifySubLocation = {
-  path: '/sub-location/{subLocationId}',
+  path: '/sub-location/{locationId}',
   method: 'PUT',
   options: modifySubLocationOpt,
-  async handler(request, h) {
-    const {
-      payload: { title, male, female },
-      params: { subLocationId },
-      auth: {
-        credentials: { userId, role },
-      },
-    } = request;
-
-    const location = new LocationOps(this.model, 'SubLocations', h);
-    const { data, criteria } = location.prepareForDb(
-      role,
-      title,
-      male,
-      female,
-      subLocationId,
-      userId,
-    );
-    return location.update(data, criteria);
+  handler(request, h) {
+    return modifyHandler(this.model, h, request, 'SubLocations');
   },
 };
 
@@ -94,14 +61,7 @@ export const deleteLocation = {
   method: 'DELETE',
   options: deleteLocationOption,
   async handler(request, h) {
-    const { locationId } = request.params;
-    const { userId, role } = request.auth.credentials;
-    const isAdmin = role === 'admin';
-    const location = new LocationOps(this.model, 'Locations', h);
-    const criteria = isAdmin
-      ? { where: { id: locationId } }
-      : { where: { id: locationId, userId } };
-    return location.delete(criteria);
+    return deleteHandler(this.model, h, request, 'Locations');
   },
 };
 
@@ -109,19 +69,8 @@ export const deleteSubLocation = {
   path: '/sub-location/{locationId}',
   method: 'DELETE',
   options: delSubLocationOpt,
-  async handler(request, h) {
-    const {
-      params: { locationId },
-      auth: {
-        credentials: { userId, role },
-      },
-    } = request;
-    const isAdmin = role === 'admin';
-    const location = new LocationOps(this.model, 'SubLocations', h);
-    const criteria = isAdmin
-      ? { where: { id: locationId } }
-      : { where: { id: locationId, userId } };
-    return location.delete(criteria);
+  handler(request, h) {
+    return deleteHandler(this.model, h, request, 'SubLocations');
   },
 };
 export const fetchMainLocation = {
@@ -129,9 +78,7 @@ export const fetchMainLocation = {
   method: 'GET',
   options: fetchLocationOption,
   async handler(request, h) {
-    const {
-      query: { limit, offset },
-    } = request;
+    const { limit, offset } = request.query;
     const location = new LocationOps(this.model, 'Locations', h);
     return location.fetch(limit, offset);
   },

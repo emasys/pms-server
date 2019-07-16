@@ -16,6 +16,9 @@ const modificationValidation = {
     male: Joi.number(),
     female: Joi.number(),
   }),
+  params: Joi.object().keys({
+    locationId: Joi.number().required(),
+  }),
 };
 const deleteValidation = {
   params: Joi.object().keys({
@@ -64,12 +67,7 @@ export const modifyLocationOption = {
   auth: {
     scope: ['user', 'admin'],
   },
-  validate: {
-    ...modificationValidation,
-    params: Joi.object().keys({
-      locationId: Joi.number().required(),
-    }),
-  },
+  validate: modificationValidation,
 };
 
 export const modifySubLocationOpt = {
@@ -79,12 +77,7 @@ export const modifySubLocationOpt = {
   auth: {
     scope: ['user', 'admin'],
   },
-  validate: {
-    ...modificationValidation,
-    params: Joi.object().keys({
-      subLocationId: Joi.number().required(),
-    }),
-  },
+  validate: modificationValidation,
 };
 
 

@@ -1,5 +1,5 @@
-import Inert from 'inert';
-import Vision from 'vision';
+import Inert from '@hapi/inert';
+import Vision from '@hapi/vision';
 import Swagger from 'hapi-swagger';
 import Auth from '@now-ims/hapi-now-auth';
 import controller from '../controllers';

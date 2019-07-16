@@ -154,13 +154,29 @@ describe('test suite for location operations', () => {
         message: 'record updated',
       });
     });
+    it('should fail to modify a nested location', async () => {
+      const { result, statusCode } = await app.server.inject({
+        method: 'PUT',
+        url: '/v1/sub-location/ikeja',
+        payload: {
+          title: 'ikeja lga',
+          male: 500,
+          female: 500,
+        },
+        headers: { Authorization: `Bearer ${userToken}` },
+      });
+      expect(statusCode).to.equal(400);
+      expect(result).to.include({
+        message: 'child "locationId" fails because ["locationId" must be a number]',
+      });
+    });
   });
 
   describe('Fetch locations', () => {
     it('should fetch main locations', async () => {
       const { result, statusCode } = await app.server.inject({
         method: 'GET',
-        url: '/v1/location',
+        url: '/v1/location?limit=5',
         headers: { Authorization: `Bearer ${userToken}` },
       });
       expect(statusCode).to.equal(200);
@@ -169,7 +185,7 @@ describe('test suite for location operations', () => {
         .to.have.property('meta')
         .to.eql({
           total: 1,
-          limit: 20,
+          limit: 5,
           offset: 0,
           pages: 1,
         });
@@ -178,7 +194,7 @@ describe('test suite for location operations', () => {
     it('should fetch nested locations', async () => {
       const { result, statusCode } = await app.server.inject({
         method: 'GET',
-        url: '/v1/location/1',
+        url: '/v1/location/1?limit=10',
         headers: { Authorization: `Bearer ${adminToken}` },
       });
       expect(statusCode).to.equal(200);
@@ -187,7 +203,7 @@ describe('test suite for location operations', () => {
         .to.have.property('meta')
         .to.eql({
           total: 1,
-          limit: 20,
+          limit: 10,
           offset: 0,
           pages: 1,
         });
