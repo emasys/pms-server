@@ -8,6 +8,7 @@ module.exports = {
     },
     locationId: {
       type: Sequelize.INTEGER,
+      onDelete: 'CASCADE',
       references: {
         model: 'Locations',
         key: 'id',
@@ -15,6 +16,7 @@ module.exports = {
     },
     userId: {
       type: Sequelize.INTEGER,
+      onDelete: 'SET NULL',
       references: {
         model: 'Users',
         key: 'id',

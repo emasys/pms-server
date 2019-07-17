@@ -1,5 +1,7 @@
 import model from '../sequelize/models';
-import { createUser, login } from './auth';
+import {
+  createUser, login, changeRole, deleteUser,
+} from './auth';
 import {
   createLocation,
   createSubLocation,
@@ -36,6 +38,8 @@ const controllerPlugin = {
     server.realm.modifiers.route.prefix = '/v1';
     server.route(createUser);
     server.route(login);
+    server.route(changeRole);
+    server.route(deleteUser);
     server.route(createLocation);
     server.route(createSubLocation);
     server.route(modifyLocation);

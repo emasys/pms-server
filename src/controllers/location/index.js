@@ -60,7 +60,7 @@ export const deleteLocation = {
   path: '/location/{locationId}',
   method: 'DELETE',
   options: deleteLocationOption,
-  async handler(request, h) {
+  handler(request, h) {
     return deleteHandler(this.model, h, request, 'Locations');
   },
 };
@@ -77,7 +77,7 @@ export const fetchMainLocation = {
   path: '/location',
   method: 'GET',
   options: fetchLocationOption,
-  async handler(request, h) {
+  handler(request, h) {
     const { limit, offset } = request.query;
     const location = new LocationOps(this.model, 'Locations', h);
     return location.fetch(limit, offset);
@@ -88,7 +88,7 @@ export const fetchSubLocation = {
   path: '/location/{locationId}',
   method: 'GET',
   options: fetchSubLocationOption,
-  async handler(request, h) {
+  handler(request, h) {
     const {
       query: { limit, offset },
       params: { locationId },
