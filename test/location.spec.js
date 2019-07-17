@@ -70,6 +70,23 @@ describe('test suite for location operations', () => {
         userId: 2,
       });
     });
+    it('should create a new location by an admin', async () => {
+      const { result, statusCode } = await app.server.inject({
+        method: 'POST',
+        url: '/v1/location',
+        payload: {
+          title: 'london',
+          male: 200000,
+          female: 400000,
+        },
+        headers: { Authorization: `Bearer ${adminToken}` },
+      });
+      expect(statusCode).to.equal(201);
+      expect(result.message.dataValues).to.include({
+        title: 'london',
+        userId: 1,
+      });
+    });
     it('should fail to create duplicate locations', async () => {
       const { result, statusCode } = await app.server.inject({
         method: 'POST',
@@ -104,6 +121,24 @@ describe('test suite for location operations', () => {
         userId: 2,
       });
     });
+    it('should create a second nested location', async () => {
+      const { result, statusCode } = await app.server.inject({
+        method: 'POST',
+        url: '/v1/location/2',
+        payload: {
+          title: 'north london',
+          male: 3000,
+          female: 4000,
+        },
+        headers: { Authorization: `Bearer ${adminToken}` },
+      });
+      expect(statusCode).to.equal(201);
+      expect(result.message.dataValues).to.include({
+        title: 'north london',
+        locationId: 2,
+        userId: 1,
+      });
+    });
   });
 
   describe('Modify locations', () => {
@@ -120,6 +155,36 @@ describe('test suite for location operations', () => {
       expect(statusCode).to.equal(200);
       expect(result).to.eql({
         message: 'record updated',
+      });
+    });
+    it('should allow an admin modify a location created by a user', async () => {
+      const { result, statusCode } = await app.server.inject({
+        method: 'PUT',
+        url: '/v1/location/1',
+        payload: {
+          title: 'lagos state',
+          male: 240001,
+        },
+        headers: { Authorization: `Bearer ${adminToken}` },
+      });
+      expect(statusCode).to.equal(200);
+      expect(result).to.eql({
+        message: 'record updated',
+      });
+    });
+    it('should not allow a user modify a location created by another user', async () => {
+      const { result, statusCode } = await app.server.inject({
+        method: 'PUT',
+        url: '/v1/location/2',
+        payload: {
+          title: 'manchester',
+          male: 240001,
+        },
+        headers: { Authorization: `Bearer ${userToken}` },
+      });
+      expect(statusCode).to.equal(404);
+      expect(result).to.eql({
+        message: 'location not found',
       });
     });
     it('should modify a non-existent location', async () => {
@@ -180,11 +245,11 @@ describe('test suite for location operations', () => {
         headers: { Authorization: `Bearer ${userToken}` },
       });
       expect(statusCode).to.equal(200);
-      expect(result.data).to.have.length(1);
+      expect(result.data).to.have.length(2);
       expect(result)
         .to.have.property('meta')
         .to.eql({
-          total: 1,
+          total: 2,
           limit: 5,
           offset: 0,
           pages: 1,
@@ -228,6 +293,34 @@ describe('test suite for location operations', () => {
       });
       expect(statusCode).to.equal(200);
       expect(result).to.eql({ message: 'record deleted' });
+    });
+  });
+
+  describe('Test for CASCADING effect', () => {
+    it('should delete a location that has a sub-location', async () => {
+      const responseBeforeDelete = await app.server.inject({
+        method: 'GET',
+        url: '/v1/location/2',
+        headers: { Authorization: `Bearer ${adminToken}` },
+      });
+      expect(responseBeforeDelete.statusCode).to.equal(200);
+      expect(responseBeforeDelete.result.data).to.have.length(1);
+
+      const { result, statusCode } = await app.server.inject({
+        method: 'DELETE',
+        url: '/v1/location/2',
+        headers: { Authorization: `Bearer ${adminToken}` },
+      });
+      expect(statusCode).to.equal(200);
+      expect(result).to.eql({ message: 'record deleted' });
+
+      const responseAfterDelete = await app.server.inject({
+        method: 'GET',
+        url: '/v1/location/2',
+        headers: { Authorization: `Bearer ${adminToken}` },
+      });
+      expect(responseAfterDelete.statusCode).to.equal(200);
+      expect(responseAfterDelete.result.data).to.have.length(0);
     });
   });
 });

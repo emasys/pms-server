@@ -52,17 +52,6 @@ export default (sequelize, DataTypes) => {
       },
     },
   });
-  Users.associate = (models) => {
-    Users.hasMany(models.Locations, {
-      foreignKey: 'id',
-    });
-  };
-
-  Users.associate = (models) => {
-    Users.hasMany(models.SubLocations, {
-      foreignKey: 'id',
-    });
-  };
 
   Users.beforeCreate(async (pendingUser) => {
     // eslint-disable-next-line no-param-reassign

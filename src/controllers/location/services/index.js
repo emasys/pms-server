@@ -16,7 +16,7 @@ class LocationOps {
       const response = await this.model[this.table].create(data);
       return this.handleResponse(response, 201);
     } catch (error) {
-      if (error.errors[0]) {
+      if (error.errors && error.errors[0]) {
         return this.handleResponse('Location already exists', 409);
       }
       return Boom.badRequest(error.message);

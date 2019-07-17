@@ -27,8 +27,9 @@ export default (sequelize, DataTypes) => {
     });
   };
   Locations.associate = (models) => {
-    Locations.hasMany(models.SubLocations, {
+    Locations.hasOne(models.SubLocations, {
       foreignKey: 'id',
+      onDelete: 'CASCADE',
     });
   };
 
