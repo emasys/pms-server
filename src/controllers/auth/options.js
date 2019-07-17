@@ -28,3 +28,32 @@ export const signInOptions = {
     }),
   },
 };
+
+export const changeRoleOptions = {
+  description: 'Change user role',
+  tags: ['api'],
+  auth: {
+    scope: ['admin'],
+  },
+  validate: {
+    params: Joi.object().keys({
+      userId: Joi.number().required(),
+    }),
+    payload: Joi.object().keys({
+      role: Joi.string().valid('admin', 'user').required(),
+    }),
+  },
+};
+
+export const deleteUserOptions = {
+  description: 'Delete a User',
+  tags: ['api'],
+  auth: {
+    scope: ['admin'],
+  },
+  validate: {
+    params: Joi.object().keys({
+      userId: Joi.number().required(),
+    }),
+  },
+};

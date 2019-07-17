@@ -37,6 +37,7 @@ export default (sequelize, DataTypes) => {
   SubLocations.associate = (models) => {
     SubLocations.belongsTo(models.Users, {
       foreignKey: 'userId',
+      onDelete: 'SET NULL',
     });
   };
 

@@ -67,6 +67,35 @@ class Auth {
     }
     return true;
   }
+
+  async changeRole(id, role) {
+    try {
+      const [isUpdated] = await this.model.Users.update(
+        { role },
+        { where: { id } },
+      );
+      if (isUpdated) {
+        return this.handleResponse(`Role updated to [${role}]`, 200);
+      }
+      return this.handleResponse('User not found', 404);
+    } catch (error) {
+      /* istanbul ignore next */
+      return this.handleResponse(error, 500);
+    }
+  }
+
+  async deleteUser(id) {
+    try {
+      const response = await this.model.Users.destroy({ where: { id } });
+      if (response) {
+        return this.handleResponse('User deleted', 200);
+      }
+      return this.handleResponse('User not registered', 404);
+    } catch (error) {
+      /* istanbul ignore next */
+      return this.handleResponse(error, 500);
+    }
+  }
 }
 
 export default Auth;
