@@ -2,6 +2,7 @@ import Joi from 'joi';
 
 export const signUpOptions = {
   description: 'User sign up',
+  notes: 'Register a new user',
   tags: ['api', 'auth'],
   auth: false,
   validate: {
@@ -18,6 +19,7 @@ export const signUpOptions = {
 
 export const signInOptions = {
   description: 'User sign in',
+  notes: 'User can login with either email or username',
   tags: ['api', 'auth'],
   auth: false,
   validate: {
@@ -31,6 +33,7 @@ export const signInOptions = {
 
 export const changeRoleOptions = {
   description: 'Change user role',
+  notes: 'Only an admin can change the role of a user',
   tags: ['api'],
   auth: {
     scope: ['admin'],
@@ -47,6 +50,7 @@ export const changeRoleOptions = {
 
 export const deleteUserOptions = {
   description: 'Delete a User',
+  notes: 'Only an admin can delete a user',
   tags: ['api'],
   auth: {
     scope: ['admin'],
